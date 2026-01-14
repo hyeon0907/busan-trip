@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/busan-trip/static/css/main.4de5bceb.css",
+    "main.css": "/busan-trip/static/css/main.bed328fd.css",
     "main.js": "/busan-trip/static/js/main.c4ff3e00.js",
     "static/js/453.71dafd60.chunk.js": "/busan-trip/static/js/453.71dafd60.chunk.js",
     "index.html": "/busan-trip/index.html",
-    "main.4de5bceb.css.map": "/busan-trip/static/css/main.4de5bceb.css.map",
+    "main.bed328fd.css.map": "/busan-trip/static/css/main.bed328fd.css.map",
     "main.c4ff3e00.js.map": "/busan-trip/static/js/main.c4ff3e00.js.map",
     "453.71dafd60.chunk.js.map": "/busan-trip/static/js/453.71dafd60.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.4de5bceb.css",
+    "static/css/main.bed328fd.css",
     "static/js/main.c4ff3e00.js"
   ]
 }
