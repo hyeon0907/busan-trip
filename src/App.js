@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -25,35 +25,95 @@ function ChangeView({ center }) {
   return null;
 }
 
-// [데이터]
+// [새로운 질문 데이터 8개]
+// 각 선택지마다 성향 점수를 부여하기 위해 type을 지정했습니다.
+// (J/P: 계획/즉흥, R/A: 휴식/활동, L/T: 로컬/트렌디)
 const questions = [
   {
     id: 1,
-    question: "여행을 떠날 때 당신의 스타일은?",
+    question: "여행 가면, 제일 먼저 떠오르는 건 뭐예요?",
     options: [
-      { text: "철저한 계획파! 엑셀 파일은 필수지.", type: "J" },
-      { text: "무계획이 상팔자! 발길 닿는 대로~", type: "P" },
+      { text: "① 아무 생각 없이 쉬기", scores: { R: 2 } },
+      { text: "② 맛집 투어", scores: { L: 1, T: 1 } },
+      { text: "③ 인생샷 남기기", scores: { T: 2 } },
+      { text: "④ 문화·역사 탐방", scores: { L: 2 } },
+      { text: "⑤ 쇼핑 스케줄", scores: { T: 1, A: 1 } },
+      { text: "⑥ 이것저것 체험하기", scores: { A: 2 } },
     ],
   },
   {
     id: 2,
-    question: "부산에 도착했다! 가장 먼저 하고 싶은 것은?",
+    question: "당신의 여행 스타일은?",
     options: [
-      { text: "바다를 보며 멍때리기 (힐링)", type: "Relax" },
-      { text: "핫플레이스 & 액티비티 즐기기 (활동)", type: "Active" },
+      { text: "① 일정 꽉꽉 채우는 타입", scores: { J: 2, A: 1 } },
+      { text: "② 느긋~하게 즐기는 타입", scores: { P: 1, R: 2 } },
+      { text: "③ 발길 닿는 대로 타입", scores: { P: 2 } },
     ],
   },
   {
     id: 3,
-    question: "선호하는 저녁 메뉴 분위기는?",
+    question: "여행지에서 가장 끌리는 장소는? (하나만!)",
     options: [
-      { text: "노포 감성! 시끌벅적한 시장통", type: "Local" },
-      { text: "인스타 감성! 예쁘고 조용한 카페/바", type: "Trendy" },
+      { text: "① 바다·자연 힐링 스폿", scores: { R: 2, L: 1 } },
+      { text: "② 골목길·시장 구경", scores: { L: 2, A: 1 } },
+      { text: "③ 전시·박물관 탐험", scores: { L: 1, T: 1 } },
+      { text: "④ 감성 카페 투어", scores: { T: 2, R: 1 } },
+      { text: "⑤ 랜드마크 인증샷", scores: { T: 2, A: 1 } },
+      { text: "⑥ 디지털·미디어 체험존", scores: { T: 2, A: 1 } },
+    ],
+  },
+  {
+    id: 4,
+    question: "전통·예술 같은 문화 체험, 솔직히 말하면?",
+    options: [
+      { text: "① 무조건 한다!", scores: { L: 2, A: 1 } },
+      { text: "② 있으면 해본다", scores: { L: 1 } },
+      { text: "③ 음… 굳이?", scores: { T: 1 } },
+    ],
+  },
+  {
+    id: 5,
+    question: "AR·VR 같은 디지털 관광 콘텐츠, 어때요?",
+    options: [
+      { text: "① 완전 취향 저격", scores: { T: 2, A: 1 } },
+      { text: "② 있으면 더 재밌다", scores: { T: 1 } },
+      { text: "③ 없어도 상관없다", scores: { L: 1 } },
+    ],
+  },
+  {
+    id: 6,
+    question: "하루 여행 코스, 당신의 선택은?",
+    options: [
+      { text: "① 한 곳만 제대로 파기", scores: { J: 1, R: 1 } },
+      { text: "② 여러 곳 찍고 다니기", scores: { J: 1, A: 2 } },
+      { text: "③ 그날 기분 따라", scores: { P: 2 } },
+    ],
+  },
+  {
+    id: 7,
+    question: "부산 여행 간다면, 제일 기대되는 건?",
+    options: [
+      { text: "① 바다 보면서 힐링", scores: { R: 2 } },
+      { text: "② 역사·전통 느끼기", scores: { L: 2 } },
+      { text: "③ 문화예술 즐기기", scores: { T: 1, L: 1 } },
+      { text: "④ 먹고 쇼핑하고 또 먹기", scores: { T: 1, A: 1 } },
+      { text: "⑤ 스마트 관광 체험하기", scores: { T: 2 } },
+    ],
+  },
+  {
+    id: 8,
+    question: "연령대는 어디쯤이신가요?",
+    options: [
+      { text: "① 10대", scores: { T: 1 } },
+      { text: "② 20대", scores: { T: 1 } },
+      { text: "③ 30대", scores: { L: 1 } },
+      { text: "④ 40대", scores: { L: 1 } },
+      { text: "⑤ 50대 이상", scores: { L: 2, R: 1 } },
     ],
   },
 ];
 
-// [데이터] 이미지(img) URL 포함
+// [결과 데이터] (기존 유지)
 const results = {
   "J-Relax-Local": {
     mbti: "꼼꼼한 힐러",
@@ -138,34 +198,83 @@ const results = {
 };
 
 function App() {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(0); // 0:시작, 1~8:질문, 9:로딩, 10:결과
+  const [userName, setUserName] = useState("");
   const [answers, setAnswers] = useState([]);
+  const [loadingPercent, setLoadingPercent] = useState(0);
 
-  const handleStart = () => setStep(1);
+  // 시작 버튼 (이름 입력 확인)
+  const handleStart = () => {
+    if (!userName.trim()) {
+      alert("이름을 입력해주세요!");
+      return;
+    }
+    setStep(1);
+  };
 
-  const handleAnswer = (type) => {
-    const newAnswers = [...answers, type];
+  // 답변 선택 핸들러
+  const handleAnswer = (scores) => {
+    const newAnswers = [...answers, scores];
     setAnswers(newAnswers);
+
     if (step < questions.length) {
       setStep(step + 1);
     } else {
-      setStep(4);
+      // 모든 질문이 끝나면 로딩 단계로 이동
+      setStep(9); 
     }
   };
 
+  // 로딩 애니메이션 (Step 9일 때 실행)
+  useEffect(() => {
+    if (step === 9) {
+      let percent = 0;
+      const interval = setInterval(() => {
+        percent += 1;
+        // 속도 조절 (초반엔 빠르고 후반엔 느리게)
+        if (percent > 80) percent += 0.5; 
+        
+        setLoadingPercent(Math.min(Math.floor(percent), 100));
+
+        if (percent >= 100) {
+          clearInterval(interval);
+          setStep(10); // 결과 화면으로 이동
+        }
+      }, 25); // 0.025초마다 갱신
+      return () => clearInterval(interval);
+    }
+  }, [step]);
+
+  // 결과 계산 로직
   const getResult = () => {
-    const key = answers.join('-');
+    let scoreJ = 0; // 계획(J) vs 즉흥(P)
+    let scoreA = 0; // 활동(Active) vs 휴식(Relax)
+    let scoreT = 0; // 트렌디(Trendy) vs 로컬(Local)
+
+    answers.forEach(score => {
+      if (score.J) scoreJ += score.J;
+      if (score.P) scoreJ -= score.P;
+      if (score.A) scoreA += score.A;
+      if (score.R) scoreA -= score.R;
+      if (score.T) scoreT += score.T;
+      if (score.L) scoreT -= score.L;
+    });
+
+    const type1 = scoreJ >= 0 ? "J" : "P";
+    const type2 = scoreA >= 0 ? "Active" : "Relax";
+    const type3 = scoreT >= 0 ? "Trendy" : "Local";
+
+    const key = `${type1}-${type2}-${type3}`;
     return results[key] || results["P-Active-Trendy"];
   };
 
   const handleReset = () => {
     setStep(0);
     setAnswers([]);
+    setUserName("");
+    setLoadingPercent(0);
   };
 
-  // --------------------------------------------------------------------------
-  // [수정된 부분] 복잡한 공유 로직을 제거하고, 링크 복사 + 알림만 남겼습니다.
-  // --------------------------------------------------------------------------
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     alert("링크가 복사되었습니다!");
@@ -173,7 +282,6 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* 휴대폰 프레임 유지 */}
       <div className="phone-frame">
         <div className="notch"></div>
         <div className="screen">
@@ -183,27 +291,40 @@ function App() {
           </div>
 
           <div className="content">
+            {/* [STEP 0] 시작 화면 & 이름 입력 */}
             {step === 0 && (
               <div className="start-screen">
                 <h1>부산 여행<br/>유형 테스트 🗺️</h1>
                 <p>나에게 딱 맞는<br/>부산 여행 코스는?</p>
                 <div className="emoji-graphic">🚆🏖️📸</div>
+                
+                <div className="input-group">
+                    <input 
+                        type="text" 
+                        placeholder="이름을 입력하세요" 
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        className="name-input"
+                    />
+                </div>
+
                 <button className="btn-primary" onClick={handleStart}>테스트 시작하기</button>
               </div>
             )}
 
-            {step >= 1 && step <= 3 && (
+            {/* [STEP 1~8] 퀴즈 화면 */}
+            {step >= 1 && step <= 8 && (
               <div className="quiz-screen">
                 <div className="progress-bar">
-                  <div className="fill" style={{width: `${(step / 3) * 100}%`}}></div>
+                  <div className="fill" style={{width: `${((step - 1) / 8) * 100}%`}}></div>
                 </div>
                 <div className="question-box">
-                  <h2>Q{step}.</h2>
-                  <p>{questions[step - 1].question}</p>
+                  <span className="q-badge">Q{step}</span>
+                  <h2>{questions[step - 1].question}</h2>
                 </div>
                 <div className="options">
                   {questions[step - 1].options.map((opt, idx) => (
-                    <button key={idx} className="btn-option" onClick={() => handleAnswer(opt.type)}>
+                    <button key={idx} className="btn-option" onClick={() => handleAnswer(opt.scores)}>
                       {opt.text}
                     </button>
                   ))}
@@ -211,7 +332,22 @@ function App() {
               </div>
             )}
 
-            {step === 4 && (
+            {/* [STEP 9] 로딩(분석) 화면 */}
+            {step === 9 && (
+              <div className="loading-screen">
+                <div className="loading-content">
+                    <div className="spinner">✈️</div>
+                    <h2>여행 취향 분석 중...</h2>
+                    <div className="percent-text">{loadingPercent}%</div>
+                    <div className="loading-bar">
+                        <div className="loading-fill" style={{width: `${loadingPercent}%`}}></div>
+                    </div>
+                </div>
+              </div>
+            )}
+
+            {/* [STEP 10] 결과 화면 */}
+            {step === 10 && (
               <div className="result-screen">
                 {(() => {
                   const result = getResult();
@@ -220,6 +356,7 @@ function App() {
                   return (
                     <>
                       <div className="result-header" style={{backgroundColor: result.color}}>
+                        <div className="user-badge">✨ {userName}님의 여행취향 분석 완료</div>
                         <small>당신의 여행 유형은</small>
                         <h2>{result.mbti}</h2>
                       </div>
@@ -248,7 +385,7 @@ function App() {
                           </MapContainer>
                         </div>
 
-                        {/* 코스 리스트 (카드 형태) */}
+                        {/* 코스 리스트 */}
                         <h3>추천 코스 📍</h3>
                         <ul className="course-list-visual">
                           {result.course.map((spot, idx) => (
@@ -271,7 +408,6 @@ function App() {
                           ))}
                         </ul>
 
-                        {/* 버튼 그룹 (수정된 공유하기 버튼 포함) */}
                         <div className="action-buttons">
                           <button className="btn-share" onClick={handleShare}>링크 복사 🔗</button>
                           <button className="btn-retry" onClick={handleReset}>다시 하기 🔄</button>
