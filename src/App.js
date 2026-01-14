@@ -10,10 +10,10 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 // ---------------------------------------------------------
@@ -21,7 +21,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 // [지도 중심 이동 컴포넌트]
 function ChangeView({ center }) {
   const map = useMap();
-  map.setView(center, 12); 
+  map.setView(center, 12);
   return null;
 }
 
@@ -196,11 +196,11 @@ const results = {
 };
 
 function App() {
-  const [step, setStep] = useState(0); 
+  const [step, setStep] = useState(0);
   const [userName, setUserName] = useState("");
   const [answers, setAnswers] = useState([]);
   const [loadingPercent, setLoadingPercent] = useState(0);
-  
+
   // [공유 기능] 링크를 통해 들어왔을 때 강제 적용할 결과 Key
   const [directResultKey, setDirectResultKey] = useState(null);
 
@@ -213,10 +213,10 @@ function App() {
     const sharedName = params.get('name');
 
     if (sharedResult && results[sharedResult]) {
-        // 파라미터가 유효하면 바로 결과 화면으로 셋팅
-        setDirectResultKey(sharedResult);
-        setUserName(sharedName || "익명");
-        setStep(10);
+      // 파라미터가 유효하면 바로 결과 화면으로 셋팅
+      setDirectResultKey(sharedResult);
+      setUserName(sharedName || "익명");
+      setStep(10);
     }
   }, []);
 
@@ -244,7 +244,7 @@ function App() {
     if (step < questions.length) {
       setStep(step + 1);
     } else {
-      setStep(9); 
+      setStep(9);
     }
   };
 
@@ -254,7 +254,7 @@ function App() {
       let percent = 0;
       const interval = setInterval(() => {
         percent += 1;
-        if (percent > 80) percent += 0.5; 
+        if (percent > 80) percent += 0.5;
         setLoadingPercent(Math.min(Math.floor(percent), 100));
 
         if (percent >= 100) {
@@ -268,33 +268,33 @@ function App() {
 
   // 결과 계산 함수 (Key 반환용)
   const calculateResultKey = () => {
-      let scoreJ = 0; 
-      let scoreA = 0; 
-      let scoreT = 0; 
-  
-      answers.forEach(score => {
-        if (score.J) scoreJ += score.J;
-        if (score.P) scoreJ -= score.P;
-        if (score.A) scoreA += score.A;
-        if (score.R) scoreA -= score.R;
-        if (score.T) scoreT += score.T;
-        if (score.L) scoreT -= score.L;
-      });
-  
-      const type1 = scoreJ >= 0 ? "J" : "P";
-      const type2 = scoreA >= 0 ? "Active" : "Relax";
-      const type3 = scoreT >= 0 ? "Trendy" : "Local";
-  
-      return `${type1}-${type2}-${type3}`;
+    let scoreJ = 0;
+    let scoreA = 0;
+    let scoreT = 0;
+
+    answers.forEach(score => {
+      if (score.J) scoreJ += score.J;
+      if (score.P) scoreJ -= score.P;
+      if (score.A) scoreA += score.A;
+      if (score.R) scoreA -= score.R;
+      if (score.T) scoreT += score.T;
+      if (score.L) scoreT -= score.L;
+    });
+
+    const type1 = scoreJ >= 0 ? "J" : "P";
+    const type2 = scoreA >= 0 ? "Active" : "Relax";
+    const type3 = scoreT >= 0 ? "Trendy" : "Local";
+
+    return `${type1}-${type2}-${type3}`;
   };
 
   // 최종 결과 객체 가져오기
   const getResult = () => {
     // 1. 링크 공유로 들어온 경우 (directResultKey가 있으면 우선 사용)
     if (directResultKey && results[directResultKey]) {
-        return results[directResultKey];
+      return results[directResultKey];
     }
-    
+
     // 2. 퀴즈를 풀어서 들어온 경우
     const key = calculateResultKey();
     return results[key] || results["P-Active-Trendy"];
@@ -306,7 +306,7 @@ function App() {
     setUserName("");
     setLoadingPercent(0);
     setDirectResultKey(null); // 공유 상태 초기화
-    
+
     // URL 파라미터 제거 (뒤로가기 방지 및 깔끔한 URL)
     window.history.pushState({}, null, window.location.pathname);
   };
@@ -314,10 +314,10 @@ function App() {
   const handleShare = () => {
     // 현재 결과 Key를 계산 (퀴즈 푼 상태라면 계산, 링크라면 저장된 값)
     const currentKey = directResultKey || calculateResultKey();
-    
+
     // 공유용 URL 생성
     const shareUrl = `${window.location.origin}${window.location.pathname}?result=${currentKey}&name=${userName}`;
-    
+
     navigator.clipboard.writeText(shareUrl);
     alert("결과 링크가 복사되었습니다! \n친구에게 공유해보세요 💌");
   };
@@ -335,18 +335,18 @@ function App() {
           <div className="content" ref={contentRef}>
             {step === 0 && (
               <div className="start-screen">
-                <h1>부산 여행<br/>유형 테스트 🗺️</h1>
-                <p>나에게 딱 맞는<br/>부산 여행 코스는?</p>
+                <h1>부산 여행<br />유형 테스트 🗺️</h1>
+                <p>나에게 딱 맞는<br />부산 여행 코스는?</p>
                 <div className="emoji-graphic">🚆🏖️📸</div>
-                
+
                 <div className="input-group">
-                    <input 
-                        type="text" 
-                        placeholder="이름을 입력하세요" 
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        className="name-input"
-                    />
+                  <input
+                    type="text"
+                    placeholder="이름을 입력하세요"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    className="name-input"
+                  />
                 </div>
 
                 <button className="btn-primary" onClick={handleStart}>테스트 시작하기</button>
@@ -356,7 +356,7 @@ function App() {
             {step >= 1 && step <= 8 && (
               <div className="quiz-screen">
                 <div className="progress-bar">
-                  <div className="fill" style={{width: `${((step - 1) / 8) * 100}%`}}></div>
+                  <div className="fill" style={{ width: `${((step - 1) / 8) * 100}%` }}></div>
                 </div>
                 <div className="question-box">
                   <span className="q-badge">Q{step}</span>
@@ -364,7 +364,11 @@ function App() {
                 </div>
                 <div className="options">
                   {questions[step - 1].options.map((opt, idx) => (
-                    <button key={idx} className="btn-option" onClick={() => handleAnswer(opt.scores)}>
+                    <button
+                      key={`${step}-${idx}`}
+                      className="btn-option"
+                      onClick={() => handleAnswer(opt.scores)}
+                    >
                       {opt.text}
                     </button>
                   ))}
@@ -375,12 +379,12 @@ function App() {
             {step === 9 && (
               <div className="loading-screen">
                 <div className="loading-content">
-                    <div className="spinner">✈️</div>
-                    <h2>여행 취향 분석 중...</h2>
-                    <div className="percent-text">{loadingPercent}%</div>
-                    <div className="loading-bar">
-                        <div className="loading-fill" style={{width: `${loadingPercent}%`}}></div>
-                    </div>
+                  <div className="spinner">✈️</div>
+                  <h2>여행 취향 분석 중...</h2>
+                  <div className="percent-text">{loadingPercent}%</div>
+                  <div className="loading-bar">
+                    <div className="loading-fill" style={{ width: `${loadingPercent}%` }}></div>
+                  </div>
                 </div>
               </div>
             )}
@@ -393,19 +397,19 @@ function App() {
 
                   return (
                     <>
-                      <div className="result-header" style={{backgroundColor: result.color}}>
+                      <div className="result-header" style={{ backgroundColor: result.color }}>
                         <div className="user-badge">✨ {userName}님의 여행취향 분석 완료</div>
                         <small>당신의 여행 유형은</small>
                         <h2>{result.mbti}</h2>
                       </div>
-                      
+
                       <div className="result-body">
                         <p className="desc">"{result.desc}"</p>
-                        
+
                         <div className="map-container-wrapper">
-                          <MapContainer 
-                            center={centerPosition} 
-                            zoom={12} 
+                          <MapContainer
+                            center={centerPosition}
+                            zoom={12}
                             scrollWheelZoom={false}
                             style={{ height: "100%", width: "100%" }}
                           >
@@ -426,14 +430,14 @@ function App() {
                         <ul className="course-list-visual">
                           {result.course.map((spot, idx) => (
                             <li key={idx} className="course-card">
-                              <div className="card-image" style={{backgroundImage: `url(${spot.img})`}}>
+                              <div className="card-image" style={{ backgroundImage: `url(${spot.img})` }}>
                                 <span className="card-num">{idx + 1}</span>
                               </div>
                               <div className="card-info">
                                 <h4>{spot.name}</h4>
-                                <a 
-                                  href={`https://map.kakao.com/link/search/${spot.name}`} 
-                                  target="_blank" 
+                                <a
+                                  href={`https://map.kakao.com/link/search/${spot.name}`}
+                                  target="_blank"
                                   rel="noreferrer"
                                   className="btn-map-link"
                                 >
