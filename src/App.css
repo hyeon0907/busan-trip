@@ -222,10 +222,13 @@ button:active {
   color: #333;
   transition: all 0.2s;
 }
-.btn-option:hover {
-  background: #eef4ff;
-  border-color: #007aff;
-  color: #007aff;
+/* 터치 기기가 아닌, 마우스가 있는 환경에서만 호버 효과 적용 */
+@media (hover: hover) {
+  .btn-option:hover {
+    background: #eef4ff;
+    border-color: #007aff;
+    color: #007aff;
+  }
 }
 
 /* =========================================
@@ -453,23 +456,20 @@ button:active {
   font-size: 15px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-
 /* =========================================
    7. 모바일 반응형 (실제 모바일 기기 접속 시)
    ========================================= */
 @media (max-width: 768px) {
-  /* 배경색을 흰색으로 하고 중앙 정렬 해제 */
   .app-container {
     background-color: white;
     align-items: flex-start;
     min-height: 100vh;
   }
 
-  /* 휴대폰 프레임 스타일(그림자, 둥근 테두리 등) 제거 및 전체 화면 확장 */
   .phone-frame {
     width: 100%;
-    height: 100vh;      /* 화면 높이 꽉 채우기 */
-    min-height: -webkit-fill-available; /* iOS 브라우저 높이 대응 */
+    height: 100vh;
+    min-height: -webkit-fill-available;
     border-radius: 0;
     box-shadow: none;
     padding: 0;
@@ -477,22 +477,21 @@ button:active {
     background: white;
   }
 
-  /* 내부 스크린 둥근 모서리 제거 */
   .screen {
     border-radius: 0;
     height: 100%;
   }
 
-  /* 가짜 UI 요소들(노치, 상단 상태바, 하단 바) 숨기기 */
   .notch, 
   .status-bar, 
   .home-indicator {
     display: none;
   }
 
-  /* 컨텐츠 영역 패딩 조정 (필요 시) */
+  /* [수정됨] 하단 여백(padding-bottom)을 80px로 넉넉하게 줌 */
   .content {
     padding: 20px;
+    padding-bottom: 80px; /* 여기를 추가했습니다! */
     height: 100%;
   }
 }
