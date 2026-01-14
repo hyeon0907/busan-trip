@@ -1,38 +1,248 @@
-.App {
+/* 전체 배경 (데스크탑 뷰) */
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+
+/* 휴대폰 프레임 스타일 */
+.phone-frame {
+  width: 375px;
+  height: 812px; /* 아이폰 X/11/12/13 등 일반적인 비율 */
+  background: black;
+  border-radius: 40px;
+  padding: 12px; /* 베젤 두께 */
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* 노치 디자인 */
+.notch {
+  width: 150px;
+  height: 25px;
+  background: black;
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  z-index: 10;
+}
+
+/* 실제 화면 영역 */
+.screen {
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 30px;
+  overflow: hidden; /* 둥근 모서리 안으로 내용 자르기 */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 상태바 */
+.status-bar {
+  height: 44px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  padding-top: 10px; /* 노치 피하기 */
+}
+
+/* 메인 컨텐츠 영역 */
+.content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* 홈 인디케이터 (하단 바) */
+.home-indicator {
+  width: 130px;
+  height: 5px;
+  background: #000;
+  border-radius: 10px;
+  margin: 8px auto;
+  opacity: 0.2;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* --- 각 화면별 스타일 --- */
+
+/* 시작 화면 */
+.start-screen h1 {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 10px;
+}
+.emoji-graphic {
+  font-size: 60px;
+  margin: 40px 0;
+  animation: bounce 2s infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* 버튼 공통 */
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: transform 0.1s;
+}
+button:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 18px;
+  background-color: #007aff;
+  color: white;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+/* 퀴즈 화면 */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #eee;
+  border-radius: 3px;
+  margin-bottom: 40px;
+}
+.progress-bar .fill {
+  height: 100%;
+  background: #007aff;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.question-box h2 {
+  color: #007aff;
+  margin-bottom: 10px;
+}
+.question-box p {
+  font-size: 22px;
+  font-weight: bold;
+  word-break: keep-all;
+  margin-bottom: 50px;
+}
+.btn-option {
+  width: 100%;
+  padding: 20px;
+  background: #f5f7fa;
+  border: 2px solid #e1e4e8;
+  border-radius: 16px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+}
+.btn-option:hover {
+  background: #eef4ff;
+  border-color: #007aff;
+  color: #007aff;
+}
+
+/* 결과 화면 */
+.result-screen {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+}
+.result-header {
+  padding: 40px 20px;
   color: white;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.result-header h2 {
+  margin: 0;
+  font-size: 28px;
+}
+.desc {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 30px;
+  word-break: keep-all;
+}
+.course-list {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  margin-bottom: 40px;
+}
+.course-list li {
+  background: white;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+.course-list .num {
+  background: #333;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+  font-size: 12px;
+}
+.btn-retry {
+  width: 100%;
+  padding: 15px;
+  background: #333;
+  color: white;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
 }
 
-.App-link {
-  color: #61dafb;
+/* ... 기존 CSS ... */
+
+/* 지도 컨테이너 스타일 */
+.map-container-wrapper {
+  width: 100%;
+  height: 200px; /* 지도 높이 설정 */
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 2px solid #fff;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* 결과 화면 스크롤 가능하게 수정 */
+.result-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* 내용이 길어지면 스크롤 */
+  padding-bottom: 40px; /* 하단 여백 */
+}
+
+/* 스크롤바 숨기기 (선택 사항) */
+.result-screen::-webkit-scrollbar {
+  display: none;
 }
