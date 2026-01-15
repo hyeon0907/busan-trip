@@ -24,7 +24,7 @@ import {
 // [초기 데이터 - DB가 비어있을 때 한 번만 업로드됨]
 const initialCourseData = [
   {
-    id: 1, // 정렬 순서용
+    id: 1,
     name: "송도 해상케이블카",
     lat: 35.076,
     lng: 129.017,
@@ -71,7 +71,7 @@ const initialCourseData = [
 ];
 
 // ---------------------------------------------------------
-// [질문 데이터는 그대로 유지]
+// [질문 데이터]
 const questions = [
   {
     id: 1,
@@ -168,7 +168,6 @@ const results = {
   "P-Active-Trendy": { mbti: "힙스터 여행러", desc: "지도 없이 걷다가 발견한 힙한 곳을 좋아해요.", color: "#a6c0fe" }
 };
 
-// ---------------------------------------------------------
 // [기능: 지도 중심 이동]
 function ChangeView({ center }) {
   const map = useMap();
@@ -180,13 +179,13 @@ function ChangeView({ center }) {
   return null;
 }
 
-// [기능: 번호가 표시되는 커스텀 마커 생성 함수]
+// [기능: 번호가 표시되는 커스텀 마커]
 const createNumberedIcon = (number) => {
   return new L.DivIcon({
     html: `<div class="custom-marker">${number}</div>`,
     className: "custom-marker-container",
     iconSize: [30, 30],
-    iconAnchor: [15, 30], // 마커의 뾰족한 부분이 위치할 기준점
+    iconAnchor: [15, 30], 
     popupAnchor: [0, -30]
   });
 };
@@ -199,7 +198,7 @@ function App() {
   const [mapCenter, setMapCenter] = useState(null);
   const [directResultKey, setDirectResultKey] = useState(null);
 
-  // [NEW] 파이어베이스에서 불러온 장소 데이터
+  // [파이어베이스 데이터]
   const [courseData, setCourseData] = useState([]);
   
   // 모달 & 댓글 관련 상태
@@ -209,40 +208,40 @@ function App() {
 
   const contentRef = useRef(null);
 
-  // 1. 파이어베이스에서 장소 데이터 실시간 구독 (없으면 업로드)
+  // 1. 파이어베이스에서 장소 데이터 불러오기 (초기 데이터 없으면 업로드)
   useEffect(() => {
     const fetchAndInitPlaces = async () => {
-      const placesRef = collection(db, "places");
-      const q = query(placesRef, orderBy("id", "asc"));
-      
-      const snapshot = await getDocs(q);
+      try {
+        const placesRef = collection(db, "places");
+        const q = query(placesRef, orderBy("id", "asc"));
+        
+        const snapshot = await getDocs(q);
 
-      if (snapshot.empty) {
-        console.log("DB에 장소 데이터가 없어 업로드를 시작합니다...");
-        const batch = writeBatch(db);
-        
-        initialCourseData.forEach((place) => {
-          // [수정 전] const newDocRef = doc(collection(db, "places")); 
-          // [수정 후] ID를 "place_1", "place_2" 처럼 고정해서 만듭니다. 
-          // 이렇게 하면 코드가 100번 실행돼도 덮어쓰기만 될 뿐 데이터가 늘어나지 않습니다.
-          const newDocRef = doc(db, "places", `place_${place.id}`); 
+        if (snapshot.empty) {
+          console.log("DB에 장소 데이터가 없어 업로드를 시작합니다...");
+          const batch = writeBatch(db);
           
-          batch.set(newDocRef, place);
-        });
-        
-        await batch.commit();
-        console.log("초기 데이터 업로드 완료!");
+          initialCourseData.forEach((place) => {
+            // 문서 ID를 'place_1', 'place_2' 형태로 고정 (중복 방지)
+            const newDocRef = doc(db, "places", `place_${place.id}`); 
+            batch.set(newDocRef, place);
+          });
+          
+          await batch.commit();
+          console.log("초기 데이터 업로드 완료!");
+        }
+      } catch (e) {
+        console.error("데이터 초기화 에러:", e);
       }
     };
 
-    // 초기화 체크 실행
     fetchAndInitPlaces();
 
-    // 실시간 데이터 구독 (좋아요 숫자 변경 시 자동 반영)
+    // 실시간 구독
     const q = query(collection(db, "places"), orderBy("id", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const places = snapshot.docs.map(doc => ({
-        docId: doc.id, // 파이어베이스 문서 ID (수정할 때 필요)
+        docId: doc.id, 
         ...doc.data()
       }));
       setCourseData(places);
@@ -268,6 +267,7 @@ function App() {
   useEffect(() => {
     if (!selectedPlace) return;
 
+    // ※ 중요: 여기서 '색인 필요' 에러가 날 수 있음 (콘솔 확인 필수)
     const q = query(
       collection(db, "reviews"),
       where("placeName", "==", selectedPlace.name),
@@ -280,13 +280,14 @@ function App() {
         ...doc.data()
       }));
       setPlaceReviews(newReviews);
+    }, (error) => {
+      console.error("리뷰 불러오기 에러 (색인 문제일 수 있음):", error);
     });
 
     return () => unsubscribe();
   }, [selectedPlace]);
 
   // --- 이벤트 핸들러들 ---
-
   const handleStart = (e) => {
     if (e) e.preventDefault();
     if (!userName.trim()) {
@@ -348,21 +349,25 @@ function App() {
     return results[key] || results["P-Active-Trendy"];
   };
 
-  // [NEW] 좋아요 증가 함수 (파이어베이스 연동)
+  // [기능: 좋아요 증가]
   const handleLike = async () => {
-    if (!selectedPlace) return;
+    if (!selectedPlace || !selectedPlace.docId) {
+      console.error("선택된 장소 정보가 올바르지 않습니다.");
+      return;
+    }
     try {
       const placeRef = doc(db, "places", selectedPlace.docId);
       await updateDoc(placeRef, {
-        likes: increment(1) // 1 증가 (동시성 문제 해결)
+        likes: increment(1)
       });
-      // 로컬 state는 onSnapshot이 자동으로 업데이트해줌
-      // 모달 내부 숫자도 업데이트된 courseData에서 찾아야 함
+      alert(`'${selectedPlace.name}'에 좋아요를 보냈어요! ❤️`);
     } catch (e) {
       console.error("좋아요 업데이트 실패:", e);
+      alert("좋아요 반영에 실패했습니다.");
     }
   };
 
+  // [기능: 리뷰 등록]
   const handleAddReview = async () => {
     if (!reviewText.trim()) return;
     try {
@@ -373,8 +378,11 @@ function App() {
         createdAt: new Date()
       });
       setReviewText("");
+      // 알림은 사용자 경험을 위해 선택사항
+      // alert("소중한 후기가 등록되었습니다!"); 
     } catch (e) {
       console.error("리뷰 저장 실패:", e);
+      alert("리뷰 저장 중 오류가 발생했습니다.");
     }
   };
 
@@ -383,7 +391,7 @@ function App() {
     setPlaceReviews([]);
   };
 
-  // 로딩바
+  // 로딩바 & 결과 저장
   useEffect(() => {
     if (step === 9) {
       let percent = 0;
@@ -394,7 +402,6 @@ function App() {
         if (percent >= 100) {
           clearInterval(interval);
           
-          // 결과 저장
           const saveResult = async () => {
             try {
               const resultKey = calculateResultKey();
@@ -464,16 +471,13 @@ function App() {
               <div className="result-screen">
                 {(() => {
                   const result = getResult();
-                  // 데이터가 아직 로드 안 됐으면 빈 배열
                   const displayCourse = courseData.length > 0 ? courseData : [];
                   
-                  // 지도 중심 (기본값: 데이터 있으면 2번째 장소, 없으면 부산역 근처)
                   const defaultCenter = displayCourse.length > 0 
                     ? [displayCourse[1].lat, displayCourse[1].lng] 
                     : [35.115, 129.04];
                   const currentCenter = mapCenter || defaultCenter;
 
-                  // 랭킹 정렬 (좋아요 많은 순)
                   const sortedRanking = [...displayCourse].sort((a, b) => b.likes - a.likes).slice(0, 3);
 
                   return (
@@ -505,12 +509,11 @@ function App() {
                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                             <ChangeView center={currentCenter} />
                             
-                            {/* [NEW] 번호 마커 표시 */}
                             {displayCourse.map((spot, idx) => (
                               <Marker 
                                 key={spot.docId || idx} 
                                 position={[spot.lat, spot.lng]}
-                                icon={createNumberedIcon(idx + 1)} // 번호 아이콘 적용
+                                icon={createNumberedIcon(idx + 1)}
                                 eventHandlers={{ click: () => setSelectedPlace(spot) }}
                               >
                                 <Popup>
@@ -534,7 +537,6 @@ function App() {
                               </div>
                               <div className="card-info">
                                 <h4>{spot.name}</h4>
-                                
                               </div>
                             </li>
                           ))}
@@ -556,7 +558,7 @@ function App() {
                               <h3 style={{marginBottom: '5px'}}>{selectedPlace.name}</h3>
                               <p className="modal-desc" style={{fontSize:'0.95rem', color:'#666'}}>{selectedPlace.desc}</p>
                               
-                              {/* [NEW] 실시간 좋아요 반영되는 부분 */}
+                              {/* [NEW] 실시간 좋아요 & 버튼 */}
                               <div className="modal-likes-row" style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px'}}>
                                 <span style={{fontWeight:'bold', color:'#ff5e62'}}>
                                   ❤️ {courseData.find(p => p.docId === selectedPlace.docId)?.likes || selectedPlace.likes}명

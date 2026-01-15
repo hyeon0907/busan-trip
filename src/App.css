@@ -664,3 +664,16 @@ button:active {
   border-style: solid;
   border-color: #ff5e62 transparent transparent transparent;
 }
+
+/* [NEW] 모달 내용 스크롤바 숨기기 (기능은 유지) */
+.modal-body-scroll {
+  /* IE, Edge */
+  -ms-overflow-style: none; 
+  /* Firefox */
+  scrollbar-width: none; 
+}
+
+/* Chrome, Safari, Opera */
+.modal-body-scroll::-webkit-scrollbar {
+  display: none;
+}
