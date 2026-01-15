@@ -1,15 +1,16 @@
 {
   "files": {
-    "main.css": "/busan-trip/static/css/main.4cebb8fb.css",
-    "main.js": "/busan-trip/static/js/main.ec315465.js",
+    "main.css": "/busan-trip/static/css/main.0b25c57e.css",
+    "main.js": "/busan-trip/static/js/main.4e625ae3.js",
     "static/js/453.71dafd60.chunk.js": "/busan-trip/static/js/453.71dafd60.chunk.js",
+    "static/media/my-trip.mp4": "/busan-trip/static/media/my-trip.d00173772172249f3d17.mp4",
     "index.html": "/busan-trip/index.html",
-    "main.4cebb8fb.css.map": "/busan-trip/static/css/main.4cebb8fb.css.map",
-    "main.ec315465.js.map": "/busan-trip/static/js/main.ec315465.js.map",
+    "main.0b25c57e.css.map": "/busan-trip/static/css/main.0b25c57e.css.map",
+    "main.4e625ae3.js.map": "/busan-trip/static/js/main.4e625ae3.js.map",
     "453.71dafd60.chunk.js.map": "/busan-trip/static/js/453.71dafd60.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.4cebb8fb.css",
-    "static/js/main.ec315465.js"
+    "static/css/main.0b25c57e.css",
+    "static/js/main.4e625ae3.js"
   ]
 }
