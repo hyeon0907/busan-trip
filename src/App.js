@@ -22,7 +22,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 // center 좌표가 바뀌면 해당 위치로 부드럽게 이동(flyTo)합니다.
 function ChangeView({ center }) {
   const map = useMap();
-  
+
   useEffect(() => {
     if (center) {
       map.flyTo(center, 14, { duration: 1.5 }); // 줌 레벨 14, 이동 시간 1.5초
@@ -34,40 +34,40 @@ function ChangeView({ center }) {
 
 // [사용자 지정 고정 코스 데이터]
 const fixedCourse = [
-  { 
-    name: "송도 해상케이블카", 
-    lat: 35.076, 
-    lng: 129.017, 
+  {
+    name: "송도 해상케이블카",
+    lat: 35.076,
+    lng: 129.017,
     img: "https://busanaircruise.co.kr/images/contents/intro-img.png",
-    likes: 1240 
+    likes: 1240
   },
-  { 
-    name: "암남공원", 
-    lat: 35.064, 
-    lng: 129.022, 
+  {
+    name: "암남공원",
+    lat: 35.064,
+    lng: 129.022,
     img: "https://cdn.dailysecu.com/news/photo/202508/168871_197918_198.jpg",
-    likes: 958 
+    likes: 958
   },
-  { 
-    name: "남포동 커피 네루다", 
-    lat: 35.097, 
-    lng: 129.035, 
+  {
+    name: "남포동 커피 네루다",
+    lat: 35.097,
+    lng: 129.035,
     img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80",
-    likes: 821 
+    likes: 821
   },
-  { 
-    name: "부평 깡통시장", 
-    lat: 35.101, 
-    lng: 129.026, 
+  {
+    name: "부평 깡통시장",
+    lat: 35.101,
+    lng: 129.026,
     img: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20170228_77%2F1488249921205G9x7H_JPEG%2F186178517539663_0.jpeg",
-    likes: 2105 
+    likes: 2105
   },
-  { 
-    name: "이재모 피자", 
-    lat: 35.102, 
-    lng: 129.030, 
+  {
+    name: "이재모 피자",
+    lat: 35.102,
+    lng: 129.030,
     img: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&q=80",
-    likes: 3402 
+    likes: 3402
   }
 ];
 
@@ -206,7 +206,7 @@ function App() {
   const [userName, setUserName] = useState("");
   const [answers, setAnswers] = useState([]);
   const [loadingPercent, setLoadingPercent] = useState(0);
-  
+
   // [NEW] 지도 중심 좌표 상태 (클릭 시 변경)
   const [mapCenter, setMapCenter] = useState(null);
 
@@ -256,6 +256,15 @@ function App() {
       setStep(step + 1);
     } else {
       setStep(9);
+    }
+  };
+
+  const handleBack = () => {
+    // 1단계보다 클 때만 동작 (2단계 이상 -> 이전 문제, 1단계 -> 시작 화면)
+    if (step >= 1) {
+      setStep(step - 1);
+      // 마지막에 저장된 답변 하나를 제거
+      setAnswers((prev) => prev.slice(0, -1));
     }
   };
 
@@ -363,6 +372,12 @@ function App() {
 
             {step >= 1 && step <= 8 && (
               <div className="quiz-screen">
+
+                {/* [NEW] 뒤로가기 버튼 영역 추가 */}
+                <button className="btn-back-fixed" onClick={handleBack}>
+                  ← 뒤로가기
+                </button>
+
                 <div className="progress-bar">
                   <div className="fill" style={{ width: `${((step - 1) / 8) * 100}%` }}></div>
                 </div>
@@ -431,11 +446,11 @@ function App() {
                             />
                             {/* 중심좌표 변경 감지 및 이동 */}
                             <ChangeView center={currentCenter} />
-                            
+
                             {displayCourse.map((spot, idx) => (
                               <Marker key={idx} position={[spot.lat, spot.lng]}>
                                 <Popup>
-                                  <b>{spot.name}</b><br/>
+                                  <b>{spot.name}</b><br />
                                   ❤️ {spot.likes.toLocaleString()}
                                 </Popup>
                               </Marker>
@@ -449,9 +464,9 @@ function App() {
                         </p>
                         <ul className="course-list-visual">
                           {displayCourse.map((spot, idx) => (
-                            <li 
-                              key={idx} 
-                              className="course-card" 
+                            <li
+                              key={idx}
+                              className="course-card"
                               // [NEW] 리스트 클릭 시 지도 중심 변경
                               onClick={() => setMapCenter([spot.lat, spot.lng])}
                               style={{ cursor: 'pointer' }}

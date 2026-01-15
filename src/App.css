@@ -455,6 +455,34 @@ button:active {
 }
 
 /* =========================================
+   [NEW] 뒤로가기 버튼 (하단 고정)
+   ========================================= */
+.btn-back-fixed {
+  position: absolute; /* 화면(.screen)을 기준으로 위치 고정 */
+  bottom: 17px;       /* 바닥에서 25px 띄움 */
+  left: 20px;         /* 왼쪽에서 20px 띄움 */
+  z-index: 100;       /* 다른 요소들보다 위에 보이도록 설정 */
+  
+  /* 예쁜 디자인 추가 */
+  background-color: rgba(255, 255, 255, 0.9); /* 살짝 투명한 흰색 */
+  border: 1px solid #bbbbbb;
+  padding: 10px 18px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #555;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* 그림자 효과 */
+  backdrop-filter: blur(5px); /* 배경 흐림 효과 (아이폰 스타일) */
+  transition: all 0.2s;
+}
+
+.btn-back-fixed:hover {
+  background-color: white;
+  color: #007aff; /* 마우스 올리면 파란색 포인트 */
+  transform: translateY(-2px);
+}
+
+/* =========================================
    7. 모바일 반응형 (실제 모바일 기기 접속 시)
    ========================================= */
 @media (max-width: 768px) {
