@@ -9,6 +9,10 @@ import './App.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
+// ... 기존 import ...
+import { db } from './firebase'; 
+// [NEW] query, where, orderBy, onSnapshot 등 추가
+import { collection, addDoc, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 let DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
@@ -33,41 +37,48 @@ function ChangeView({ center }) {
 }
 
 // [사용자 지정 고정 코스 데이터]
+// [App.js] fixedCourse 수정
 const fixedCourse = [
   {
     name: "송도 해상케이블카",
     lat: 35.076,
     lng: 129.017,
     img: "https://busanaircruise.co.kr/images/contents/intro-img.png",
-    likes: 1240
+    likes: 1240,
+    desc: "바다 위를 가로지르는 짜릿한 경험! 송도 해수욕장의 전경이 한눈에 들어옵니다. 야경도 정말 예뻐요."
   },
   {
     name: "암남공원",
     lat: 35.064,
     lng: 129.022,
     img: "https://cdn.dailysecu.com/news/photo/202508/168871_197918_198.jpg",
-    likes: 958
+    likes: 958,
+    desc: "조개구이 맛집들이 모여있는 곳으로 유명해요. 케이블카 타고 내려서 든든하게 배 채우기 딱 좋은 코스!"
   },
+  // ... 나머지 장소들도 desc 추가 ...
   {
     name: "남포동 커피 네루다",
     lat: 35.097,
     lng: 129.035,
     img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80",
-    likes: 821
+    likes: 821,
+    desc: "고풍스러운 인테리어와 향긋한 커피가 있는 곳. 여행 중 잠시 쉬어가며 감성 충전하기 좋아요."
   },
   {
     name: "부평 깡통시장",
     lat: 35.101,
     lng: 129.026,
     img: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20170228_77%2F1488249921205G9x7H_JPEG%2F186178517539663_0.jpeg",
-    likes: 2105
+    likes: 2105,
+    desc: "부산의 맛을 제대로 느끼고 싶다면 필수! 비빔당면, 유부주머니 등 먹거리 천국입니다."
   },
   {
     name: "이재모 피자",
     lat: 35.102,
     lng: 129.030,
     img: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&q=80",
-    likes: 3402
+    likes: 3402,
+    desc: "부산 로컬 찐 맛집. 치즈가 흘러넘치는 피자를 맛보려면 웨이팅은 필수지만 후회하지 않아요!"
   }
 ];
 
@@ -207,6 +218,7 @@ function App() {
   const [answers, setAnswers] = useState([]);
   const [loadingPercent, setLoadingPercent] = useState(0);
 
+
   // [NEW] 지도 중심 좌표 상태 (클릭 시 변경)
   const [mapCenter, setMapCenter] = useState(null);
 
@@ -269,6 +281,7 @@ function App() {
   };
 
   // 로딩 애니메이션
+  // 로딩 애니메이션 및 결과 저장
   useEffect(() => {
     if (step === 9) {
       let percent = 0;
@@ -279,12 +292,33 @@ function App() {
 
         if (percent >= 100) {
           clearInterval(interval);
-          setStep(10);
+          
+          // [NEW] 파이어베이스에 결과 저장하기
+          const saveResult = async () => {
+            try {
+              // 현재 결과 키 계산
+              const resultKey = calculateResultKey(); 
+              
+              // 'test_results'라는 컬렉션에 데이터 추가
+              await addDoc(collection(db, "test_results"), {
+                name: userName,
+                result: resultKey,
+                answers: answers, // 사용자가 선택한 답변들
+                timestamp: new Date() // 저장 시간
+              });
+              console.log("결과 저장 완료!");
+            } catch (e) {
+              console.error("저장 중 에러 발생: ", e);
+            }
+          };
+
+          saveResult(); // 저장 함수 실행
+          setStep(10);  // 결과 화면으로 이동
         }
       }, 25);
       return () => clearInterval(interval);
     }
-  }, [step]);
+  }, [step]); // 의존성 배열은 step만 있어도 됩니다.
 
   // 결과 계산 함수 (Key 반환용)
   const calculateResultKey = () => {
@@ -337,6 +371,62 @@ function App() {
 
     navigator.clipboard.writeText(shareUrl);
     alert("결과 링크가 복사되었습니다! \n친구에게 공유해보세요 💌");
+  };
+
+  // ... 기존 state들 ...
+  
+  // [NEW] 선택된 장소 (모달용)
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  // [NEW] 해당 장소의 댓글 목록
+  const [placeReviews, setPlaceReviews] = useState([]);
+  // [NEW] 댓글 입력값
+  const [reviewText, setReviewText] = useState("");
+
+  // [NEW] 장소 선택 시 댓글 불러오기 (실시간 연동)
+  useEffect(() => {
+    if (!selectedPlace) return;
+
+    // 'reviews' 컬렉션에서 현재 장소 이름과 같은 글만 가져오기 (시간 역순)
+    const q = query(
+      collection(db, "reviews"),
+      where("placeName", "==", selectedPlace.name),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const newReviews = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setPlaceReviews(newReviews);
+    });
+
+    return () => unsubscribe();
+  }, [selectedPlace]);
+
+  // [NEW] 댓글 등록 함수
+  const handleAddReview = async () => {
+    if (!reviewText.trim()) return;
+    
+    try {
+      await addDoc(collection(db, "reviews"), {
+        placeName: selectedPlace.name,
+        text: reviewText,
+        userName: userName || "익명", // 현재 유저 이름 사용
+        createdAt: new Date()
+      });
+      setReviewText(""); // 입력창 비우기
+      alert("후기가 등록되었습니다!");
+    } catch (e) {
+      console.error("댓글 저장 실패:", e);
+      alert("오류가 발생했습니다.");
+    }
+  };
+
+  // [NEW] 모달 닫기
+  const closeDetail = () => {
+    setSelectedPlace(null);
+    setPlaceReviews([]);
   };
 
   return (
@@ -420,13 +510,14 @@ function App() {
                 {(() => {
                   const result = getResult();
                   const displayCourse = fixedCourse;
-
-                  // 지도의 초기 중심값 또는 클릭된 위치
-                  // mapCenter가 없으면 코스의 2번째 장소(암남공원)를 기본값으로 사용
                   const currentCenter = mapCenter || [displayCourse[1].lat, displayCourse[1].lng];
+
+                  // [NEW] 좋아요 순으로 정렬하여 랭킹 데이터 만들기 (Top 3)
+                  const sortedRanking = [...fixedCourse].sort((a, b) => b.likes - a.likes).slice(0, 3);
 
                   return (
                     <>
+                      {/* --- 결과 헤더 --- */}
                       <div className="result-header" style={{ backgroundColor: result.color }}>
                         <div className="user-badge">✨ {userName}님의 여행취향 분석 완료</div>
                         <small>당신의 여행 유형은</small>
@@ -434,73 +525,113 @@ function App() {
                       </div>
 
                       <div className="result-body">
-                        <p className="desc">"{result.desc}"</p>
+                        {/* --- 1. 핫플레이스 랭킹 영역 --- */}
+                        <div className="ranking-section">
+                          <h3>🔥 부산 핫플 랭킹 TOP 3</h3>
+                          <div className="ranking-list">
+                            {sortedRanking.map((place, idx) => (
+                              <div key={idx} className="ranking-item" onClick={() => setSelectedPlace(place)}>
+                                <span className={`rank-badge rank-${idx + 1}`}>{idx + 1}위</span>
+                                <span className="rank-name">{place.name}</span>
+                                <span className="rank-likes">❤️ {place.likes}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
 
+                        {/* --- 2. 지도 영역 --- */}
                         <div className="map-container-wrapper">
-                          <MapContainer
-                            center={currentCenter}
-                            zoom={13}
-                            scrollWheelZoom={false}
-                            style={{ height: "100%", width: "100%" }}
-                          >
-                            <TileLayer
-                              attribution='&copy; OpenStreetMap contributors'
-                              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            />
-                            {/* 중심좌표 변경 감지 및 이동 */}
+                          <MapContainer center={currentCenter} zoom={13} style={{ height: "100%", width: "100%" }}>
+                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                             <ChangeView center={currentCenter} />
-
                             {displayCourse.map((spot, idx) => (
-                              <Marker key={idx} position={[spot.lat, spot.lng]}>
-                                <Popup>
-                                  <b>{spot.name}</b><br />
-                                  ❤️ {spot.likes.toLocaleString()}
-                                </Popup>
+                              <Marker key={idx} position={[spot.lat, spot.lng]}
+                                eventHandlers={{
+                                  click: () => setSelectedPlace(spot) // [NEW] 마커 클릭 시 모달 열기
+                                }}>
                               </Marker>
                             ))}
                           </MapContainer>
                         </div>
 
-                        <h3>추천 코스 📍</h3>
-                        <p className="tip-text" style={{ fontSize: '0.85rem', color: '#666', marginBottom: '10px' }}>
-                          * 목록을 클릭하면 지도가 이동해요!
-                        </p>
+                        {/* --- 3. 추천 코스 리스트 --- */}
+                        <h3>📍 추천 코스 (클릭해서 상세보기)</h3>
                         <ul className="course-list-visual">
                           {displayCourse.map((spot, idx) => (
-                            <li
-                              key={idx}
-                              className="course-card"
-                              // [NEW] 리스트 클릭 시 지도 중심 변경
-                              onClick={() => setMapCenter([spot.lat, spot.lng])}
-                              style={{ cursor: 'pointer' }}
-                            >
+                            <li key={idx} className="course-card" onClick={() => setSelectedPlace(spot)}>
                               <div className="card-image" style={{ backgroundImage: `url(${spot.img})` }}>
                                 <span className="card-num">{idx + 1}</span>
                               </div>
                               <div className="card-info">
-                                <div className="card-title-row">
-                                  <h4>{spot.name}</h4>
-                                  <span className="like-badge">❤️ {spot.likes.toLocaleString()}</span>
-                                </div>
-                                <a
-                                  href={`https://map.kakao.com/link/search/${spot.name}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="btn-map-link"
-                                  onClick={(e) => e.stopPropagation()} // 링크 클릭 시 지도 이동 방지
-                                >
-                                  길찾기 🔗
-                                </a>
+                                <h4>{spot.name}</h4>
+                                {/* <p className="short-desc">{spot.desc.substring(0, 20)}...</p> */}
                               </div>
                             </li>
                           ))}
                         </ul>
-
+                        
+                        {/* 버튼들 */}
                         <div className="action-buttons">
                           <button className="btn-share" onClick={handleShare}>공유 하기 🔗</button>
                           <button className="btn-retry" onClick={handleReset}>다시 하기 🔄</button>
                         </div>
                       </div>
+
+                      {/* --- [NEW] 상세보기 모달 (팝업) --- */}
+                      {/* --- 상세보기 모달 (스마트폰 스타일) --- */}
+                      {selectedPlace && (
+                        <div className="modal-overlay" onClick={closeDetail}>
+                          {/* e.stopPropagation()으로 내부 클릭 시 닫힘 방지 */}
+                          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            
+                            {/* 닫기 버튼 */}
+                            <button className="btn-close" onClick={closeDetail}>✕</button>
+                            
+                            {/* 스크롤 가능한 영역 시작 */}
+                            <div className="modal-body-scroll">
+                              <img src={selectedPlace.img} alt={selectedPlace.name} className="modal-img" />
+                              <h3 style={{marginBottom: '5px'}}>{selectedPlace.name}</h3>
+                              <p className="modal-desc" style={{fontSize:'0.95rem', color:'#666'}}>{selectedPlace.desc}</p>
+                              <div className="modal-likes">❤️ 이 장소를 {selectedPlace.likes}명이 좋아해요</div>
+
+                              <hr style={{border:'0', borderTop:'1px solid #eee', margin:'20px 0'}} />
+                              
+                              {/* 댓글(후기) 영역 */}
+                              <div className="review-section">
+                                <h4 style={{marginBottom:'10px'}}>💬 실시간 여행 톡</h4>
+                                <div className="review-list" style={{maxHeight:'200px'}}>
+                                  {placeReviews.length === 0 ? (
+                                    <p className="no-review" style={{textAlign:'center', color:'#aaa', padding:'20px'}}>
+                                      첫 번째 후기를 남겨주세요! 📝
+                                    </p>
+                                  ) : (
+                                    placeReviews.map((rev) => (
+                                      <div key={rev.id} className="review-item">
+                                        <span style={{fontWeight:'bold', marginRight:'6px'}}>{rev.userName}</span>
+                                        <span style={{color:'#333'}}>{rev.text}</span>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                                
+                                <div className="review-input-box" style={{marginTop:'10px'}}>
+                                  <input 
+                                    type="text" 
+                                    value={reviewText} 
+                                    onChange={(e) => setReviewText(e.target.value)}
+                                    placeholder="꿀팁이나 후기를 공유해요!"
+                                    onKeyPress={(e) => e.key === 'Enter' && handleAddReview()}
+                                  />
+                                  <button onClick={handleAddReview}>등록</button>
+                                </div>
+                              </div>
+                            </div> 
+                            {/* 스크롤 영역 끝 */}
+
+                          </div>
+                        </div>
+                      )}
+
                     </>
                   );
                 })()}

@@ -526,3 +526,106 @@ button:active {
     height: 100%;
   }
 }
+
+/* 랭킹 스타일 */
+.ranking-section { margin-bottom: 20px; }
+.ranking-item {
+  display: flex; align-items: center; background: white;
+  padding: 10px; margin-bottom: 8px; border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer;
+}
+.rank-badge {
+  font-weight: bold; padding: 4px 8px; border-radius: 5px; margin-right: 10px;
+  background: #eee; font-size: 0.8rem;
+}
+.rank-1 { background: #FFD700; color: #fff; } /* 금메달 색 */
+.rank-2 { background: #C0C0C0; color: #fff; }
+.rank-3 { background: #CD7F32; color: #fff; }
+.rank-name { flex: 1; font-weight: 600; }
+.rank-likes { color: #ff5e62; font-size: 0.85rem; }
+
+/* 모달(팝업) 스타일 */
+.modal-overlay {
+  position: absolute; /* fixed 대신 absolute를 써서 phone-frame 안에 가둠 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* 반투명 검은 배경 */
+  z-index: 1000; /* 지도보다 위에 뜨도록 */
+  display: flex;
+  align-items: flex-end; /* 모달을 화면 아래쪽으로 정렬 */
+  justify-content: center;
+  animation: fadeIn 0.3s;
+}
+
+/* 2. 모달창 본체: 화면 아래에서 올라오는 카드 형태 */
+.modal-content {
+  background: white;
+  width: 100%;        /* 너비 100% 꽉 차게 */
+  height: 85%;        /* 높이는 화면의 85% 정도만 차지 */
+  border-radius: 25px 25px 0 0; /* 위쪽 모서리만 둥글게 */
+  padding: 25px 20px;
+  position: relative;
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column; /* 내부 요소 세로 정렬 */
+  
+  /* 애니메이션: 아래에서 위로 슥 올라오기 */
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 닫기 버튼: 우측 상단 */
+.btn-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  border: none;
+  background: #f1f3f5;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 이미지 스타일 */
+.modal-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+/* 내용 스크롤 가능하게 (모달 내용이 길어지면 스크롤) */
+.modal-body-scroll {
+  overflow-y: auto;
+  flex: 1; /* 남은 공간 모두 차지 */
+  padding-bottom: 20px;
+}
+
+/* --- 애니메이션 정의 --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-desc { color: #555; line-height: 1.5; margin-bottom: 15px; }
+.modal-likes { color: #ff5e62; font-weight: bold; margin-bottom: 20px; }
+
+/* 댓글 스타일 */
+.review-section { background: #f9f9f9; padding: 15px; border-radius: 12px; }
+.review-list { max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
+.review-item { font-size: 0.9rem; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 6px;}
+.review-input-box { display: flex; gap: 5px; }
+.review-input-box input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+.review-input-box button { background: #333; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
