@@ -677,3 +677,88 @@ button:active {
 .modal-body-scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* [App.css] 맨 아래에 추가 */
+
+/* 1. 가상전시관 버튼 스타일 */
+.btn-video {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* 보라색 계열 그라데이션 */
+  color: white;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 12px; /* 하단 버튼들과 간격 */
+  box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+
+.btn-video:active {
+  transform: scale(0.98);
+}
+/* [App.css] 맨 아래 추가 (기존 비디오 모달 스타일을 덮어씁니다) */
+
+/* 1. 비디오 모달을 전체 화면으로 변경 */
+.video-modal {
+  position: fixed !important; /* 화면 고정 */
+  top: 0;
+  left: 0;
+  width: 100vw !important;  /* 너비 100% */
+  height: 100vh !important; /* 높이 100% */
+  background: black !important; /* 배경 검은색 */
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* 최상단 노출 */
+}
+
+/* 2. 제목, 설명글 숨기기 (영상만 집중) */
+.video-modal h3, 
+.video-modal p {
+  display: none !important; 
+}
+
+/* 3. 닫기 버튼 스타일 개선 (우측 상단 투명 버튼) */
+.video-modal .btn-close {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  z-index: 100; /* 영상보다 위에 */
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* 4. 비디오 컨테이너를 화면 꽉 차게 (비율 유지 or 꽉 채우기) */
+.video-container {
+  width: 100%;
+  height: 100%;
+  padding-bottom: 0 !important; /* 기존 비율 제거 */
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* iframe(유튜브)이나 video 태그 크기 설정 */
+.video-container iframe,
+.video-container video {
+  width: 100%;
+  height: 100%; /* 화면 높이에 맞춤 */
+  max-width: 100%;
+  border: none;
+}

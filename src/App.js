@@ -3,21 +3,21 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import './App.css';
-
+import myVideo from './assets/my-trip.mp4';
 // 파이어베이스 관련 함수 불러오기
-import { db } from './firebase'; 
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
-  onSnapshot, 
-  doc, 
-  updateDoc, 
+import { db } from './firebase';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  doc,
+  updateDoc,
   increment,
-  writeBatch 
+  writeBatch
 } from 'firebase/firestore';
 
 // ---------------------------------------------------------
@@ -185,7 +185,7 @@ const createNumberedIcon = (number) => {
     html: `<div class="custom-marker">${number}</div>`,
     className: "custom-marker-container",
     iconSize: [30, 30],
-    iconAnchor: [15, 30], 
+    iconAnchor: [15, 30],
     popupAnchor: [0, -30]
   });
 };
@@ -200,12 +200,12 @@ function App() {
 
   // [파이어베이스 데이터]
   const [courseData, setCourseData] = useState([]);
-  
+
   // 모달 & 댓글 관련 상태
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [placeReviews, setPlaceReviews] = useState([]);
   const [reviewText, setReviewText] = useState("");
-
+  const [showVideo, setShowVideo] = useState(false);
   const contentRef = useRef(null);
 
   // 1. 파이어베이스에서 장소 데이터 불러오기 (초기 데이터 없으면 업로드)
@@ -214,19 +214,19 @@ function App() {
       try {
         const placesRef = collection(db, "places");
         const q = query(placesRef, orderBy("id", "asc"));
-        
+
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
           console.log("DB에 장소 데이터가 없어 업로드를 시작합니다...");
           const batch = writeBatch(db);
-          
+
           initialCourseData.forEach((place) => {
             // 문서 ID를 'place_1', 'place_2' 형태로 고정 (중복 방지)
-            const newDocRef = doc(db, "places", `place_${place.id}`); 
+            const newDocRef = doc(db, "places", `place_${place.id}`);
             batch.set(newDocRef, place);
           });
-          
+
           await batch.commit();
           console.log("초기 데이터 업로드 완료!");
         }
@@ -241,7 +241,7 @@ function App() {
     const q = query(collection(db, "places"), orderBy("id", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const places = snapshot.docs.map(doc => ({
-        docId: doc.id, 
+        docId: doc.id,
         ...doc.data()
       }));
       setCourseData(places);
@@ -401,7 +401,7 @@ function App() {
         setLoadingPercent(Math.min(Math.floor(percent), 100));
         if (percent >= 100) {
           clearInterval(interval);
-          
+
           const saveResult = async () => {
             try {
               const resultKey = calculateResultKey();
@@ -430,7 +430,7 @@ function App() {
         <div className="screen">
           <div className="status-bar"><span>12:00</span><span>🔋 100%</span></div>
           <div className="content" ref={contentRef}>
-            
+
             {step === 0 && (
               <div className="start-screen">
                 <h1>부산 여행<br />유형 테스트 🗺️</h1>
@@ -472,9 +472,9 @@ function App() {
                 {(() => {
                   const result = getResult();
                   const displayCourse = courseData.length > 0 ? courseData : [];
-                  
-                  const defaultCenter = displayCourse.length > 0 
-                    ? [displayCourse[1].lat, displayCourse[1].lng] 
+
+                  const defaultCenter = displayCourse.length > 0
+                    ? [displayCourse[1].lat, displayCourse[1].lng]
                     : [35.115, 129.04];
                   const currentCenter = mapCenter || defaultCenter;
 
@@ -508,16 +508,16 @@ function App() {
                           <MapContainer center={currentCenter} zoom={13} style={{ height: "100%", width: "100%" }}>
                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                             <ChangeView center={currentCenter} />
-                            
+
                             {displayCourse.map((spot, idx) => (
-                              <Marker 
-                                key={spot.docId || idx} 
+                              <Marker
+                                key={spot.docId || idx}
                                 position={[spot.lat, spot.lng]}
                                 icon={createNumberedIcon(idx + 1)}
                                 eventHandlers={{ click: () => setSelectedPlace(spot) }}
                               >
                                 <Popup>
-                                  <b>{spot.name}</b><br/>클릭해서 자세히 보기
+                                  <b>{spot.name}</b><br />클릭해서 자세히 보기
                                 </Popup>
                               </Marker>
                             ))}
@@ -529,9 +529,9 @@ function App() {
                         <ul className="course-list-visual">
                           {displayCourse.map((spot, idx) => (
                             <li key={spot.docId || idx} className="course-card" onClick={() => {
-                                setSelectedPlace(spot);
-                                setMapCenter([spot.lat, spot.lng]);
-                              }}>
+                              setSelectedPlace(spot);
+                              setMapCenter([spot.lat, spot.lng]);
+                            }}>
                               <div className="card-image" style={{ backgroundImage: `url(${spot.img})` }}>
                                 <span className="card-num">{idx + 1}</span>
                               </div>
@@ -541,7 +541,9 @@ function App() {
                             </li>
                           ))}
                         </ul>
-
+                        <button className="btn-video" onClick={() => setShowVideo(true)}>
+                          🎥 부산 가상전시관 체험하기
+                        </button>
                         <div className="action-buttons">
                           <button className="btn-share" onClick={handleShare}>공유 하기 🔗</button>
                           <button className="btn-retry" onClick={handleReset}>다시 하기 🔄</button>
@@ -555,46 +557,65 @@ function App() {
                             <button className="btn-close" onClick={closeDetail}>✕</button>
                             <div className="modal-body-scroll">
                               <img src={selectedPlace.img} alt={selectedPlace.name} className="modal-img" />
-                              <h3 style={{marginBottom: '5px'}}>{selectedPlace.name}</h3>
-                              <p className="modal-desc" style={{fontSize:'0.95rem', color:'#666'}}>{selectedPlace.desc}</p>
-                              
+                              <h3 style={{ marginBottom: '5px' }}>{selectedPlace.name}</h3>
+                              <p className="modal-desc" style={{ fontSize: '0.95rem', color: '#666' }}>{selectedPlace.desc}</p>
+
                               {/* [NEW] 실시간 좋아요 & 버튼 */}
-                              <div className="modal-likes-row" style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px'}}>
-                                <span style={{fontWeight:'bold', color:'#ff5e62'}}>
+                              <div className="modal-likes-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                                <span style={{ fontWeight: 'bold', color: '#ff5e62' }}>
                                   ❤️ {courseData.find(p => p.docId === selectedPlace.docId)?.likes || selectedPlace.likes}명
                                 </span>
                                 <button onClick={handleLike} style={{
-                                  padding: '5px 12px', borderRadius:'20px', border:'1px solid #ff5e62', 
-                                  background:'white', color:'#ff5e62', cursor:'pointer', fontSize:'0.8rem'
+                                  padding: '5px 12px', borderRadius: '20px', border: '1px solid #ff5e62',
+                                  background: 'white', color: '#ff5e62', cursor: 'pointer', fontSize: '0.8rem'
                                 }}>
                                   좋아요 누르기 👍
                                 </button>
                               </div>
 
-                              <hr style={{border:'0', borderTop:'1px solid #eee', margin:'20px 0'}} />
-                              
+                              <hr style={{ border: '0', borderTop: '1px solid #eee', margin: '20px 0' }} />
+
                               {/* 댓글 영역 */}
                               <div className="review-section">
-                                <h4 style={{marginBottom:'10px'}}>💬 실시간 여행 톡</h4>
-                                <div className="review-list" style={{maxHeight:'200px'}}>
+                                <h4 style={{ marginBottom: '10px' }}>💬 실시간 여행 톡</h4>
+                                <div className="review-list" style={{ maxHeight: '200px' }}>
                                   {placeReviews.length === 0 ? (
-                                    <p className="no-review" style={{textAlign:'center', color:'#aaa', padding:'20px'}}>첫 후기를 남겨주세요! 📝</p>
+                                    <p className="no-review" style={{ textAlign: 'center', color: '#aaa', padding: '20px' }}>첫 후기를 남겨주세요! 📝</p>
                                   ) : (
                                     placeReviews.map((rev) => (
                                       <div key={rev.id} className="review-item">
-                                        <span style={{fontWeight:'bold', marginRight:'6px'}}>{rev.userName}</span>
-                                        <span style={{color:'#333'}}>{rev.text}</span>
+                                        <span style={{ fontWeight: 'bold', marginRight: '6px' }}>{rev.userName}</span>
+                                        <span style={{ color: '#333' }}>{rev.text}</span>
                                       </div>
                                     ))
                                   )}
                                 </div>
-                                <div className="review-input-box" style={{marginTop:'10px'}}>
-                                  <input type="text" value={reviewText} onChange={(e) => setReviewText(e.target.value)} 
-                                    placeholder="후기를 남겨주세요!" onKeyPress={(e) => e.key === 'Enter' && handleAddReview()}/>
+                                <div className="review-input-box" style={{ marginTop: '10px' }}>
+                                  <input type="text" value={reviewText} onChange={(e) => setReviewText(e.target.value)}
+                                    placeholder="후기를 남겨주세요!" onKeyPress={(e) => e.key === 'Enter' && handleAddReview()} />
                                   <button onClick={handleAddReview}>등록</button>
                                 </div>
                               </div>
-                            </div> 
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {showVideo && (
+                        <div className="modal-overlay" onClick={() => setShowVideo(false)}>
+                          <div className="modal-content video-modal" onClick={(e) => e.stopPropagation()}>
+                            <button className="btn-close" onClick={() => setShowVideo(false)}>✕</button>
+                            <h3 style={{ marginBottom: '15px' }}>🏛️ 부산 가상전시관</h3>
+
+                            {/* 반응형 비디오 컨테이너 */}
+                            <div className="video-container">
+                              {/* 👇 autoPlay playsInline 추가 */}
+                              <video controls autoPlay playsInline style={{ width: '100%', height: '100%' }}>
+                                <source src={myVideo} type="video/mp4" />
+                              </video>
+                            </div>
+                            <p style={{ marginTop: '15px', color: '#666', fontSize: '0.9rem' }}>
+                              부산의 아름다운 명소들을 영상으로 먼저 만나보세요!
+                            </p>
                           </div>
                         </div>
                       )}
