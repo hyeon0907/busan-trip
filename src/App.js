@@ -367,8 +367,11 @@ function App() {
                 </div>
 
                 <button className="btn-primary" onClick={handleStart}>테스트 시작하기</button>
+                
               </div>
             )}
+
+            
 
             {step >= 1 && step <= 8 && (
               <div className="quiz-screen">
