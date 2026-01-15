@@ -18,12 +18,58 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 // ---------------------------------------------------------
 
-// [지도 중심 이동 컴포넌트]
+// [지도 중심 이동 컴포넌트 - 기능 개선]
+// center 좌표가 바뀌면 해당 위치로 부드럽게 이동(flyTo)합니다.
 function ChangeView({ center }) {
   const map = useMap();
-  map.setView(center, 12);
+  
+  useEffect(() => {
+    if (center) {
+      map.flyTo(center, 14, { duration: 1.5 }); // 줌 레벨 14, 이동 시간 1.5초
+    }
+  }, [center, map]);
+
   return null;
 }
+
+// [사용자 지정 고정 코스 데이터]
+const fixedCourse = [
+  { 
+    name: "송도 해상케이블카", 
+    lat: 35.076, 
+    lng: 129.017, 
+    img: "https://busanaircruise.co.kr/images/contents/intro-img.png",
+    likes: 1240 
+  },
+  { 
+    name: "암남공원", 
+    lat: 35.064, 
+    lng: 129.022, 
+    img: "https://cdn.dailysecu.com/news/photo/202508/168871_197918_198.jpg",
+    likes: 958 
+  },
+  { 
+    name: "남포동 커피 네루다", 
+    lat: 35.097, 
+    lng: 129.035, 
+    img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80",
+    likes: 821 
+  },
+  { 
+    name: "부평 깡통시장", 
+    lat: 35.101, 
+    lng: 129.026, 
+    img: "https://search.pstatic.net/common/?src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20170228_77%2F1488249921205G9x7H_JPEG%2F186178517539663_0.jpeg",
+    likes: 2105 
+  },
+  { 
+    name: "이재모 피자", 
+    lat: 35.102, 
+    lng: 129.030, 
+    img: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&q=80",
+    likes: 3402 
+  }
+];
 
 // [새로운 질문 데이터 8개]
 const questions = [
@@ -116,82 +162,42 @@ const results = {
   "J-Relax-Local": {
     mbti: "꼼꼼한 힐러",
     desc: "계획적이면서도 여유를 즐기는 당신!",
-    color: "#4facfe",
-    course: [
-      { name: "해동용궁사", lat: 35.1883, lng: 129.2233, img: "https://images.unsplash.com/photo-1596418833075-80252875e638?w=500&q=80" },
-      { name: "기장 연화리 해녀촌", lat: 35.216, lng: 129.227, img: "https://images.unsplash.com/photo-1621689893488-82db37c2299a?w=500&q=80" },
-      { name: "해운대 달맞이길", lat: 35.158, lng: 129.176, img: "https://images.unsplash.com/photo-1563292723-5e758782a4d0?w=500&q=80" }
-    ]
+    color: "#4facfe"
   },
   "J-Relax-Trendy": {
     mbti: "감성 플래너",
     desc: "완벽한 동선으로 예쁜 곳만 골라가요.",
-    color: "#a18cd1",
-    course: [
-      { name: "흰여울문화마을", lat: 35.078, lng: 129.044, img: "https://images.unsplash.com/photo-1569925624707-160892047814?w=500&q=80" },
-      { name: "영도 피아크", lat: 35.086, lng: 129.065, img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80" },
-      { name: "광안리 해수욕장", lat: 35.153, lng: 129.118, img: "https://images.unsplash.com/photo-1548178152-1e96720eb99e?w=500&q=80" }
-    ]
+    color: "#a18cd1"
   },
   "J-Active-Local": {
     mbti: "열정 탐험가",
     desc: "부산의 찐 바이브를 느끼고 싶어하는 당신!",
-    color: "#ff9a9e",
-    course: [
-      { name: "자갈치 시장", lat: 35.096, lng: 129.030, img: "https://images.unsplash.com/photo-1535231902047-9878278784d4?w=500&q=80" },
-      { name: "남포동 먹자골목", lat: 35.099, lng: 129.033, img: "https://images.unsplash.com/photo-1629729868731-299f1165452f?w=500&q=80" },
-      { name: "용두산 공원", lat: 35.100, lng: 129.032, img: "https://images.unsplash.com/photo-1627885375782-b1b70c4c47f5?w=500&q=80" }
-    ]
+    color: "#ff9a9e"
   },
   "J-Active-Trendy": {
     mbti: "트렌드 리더",
     desc: "부산에서 가장 핫한 곳은 다 가봐야 직성이 풀려요.",
-    color: "#fbc2eb",
-    course: [
-      { name: "해운대 블루라인파크", lat: 35.161, lng: 129.166, img: "https://images.unsplash.com/photo-1634568437937-25e1a3b90f4a?w=500&q=80" },
-      { name: "엘시티 전망대", lat: 35.160, lng: 129.165, img: "https://images.unsplash.com/photo-1545641203-7d072a14e3b2?w=500&q=80" },
-      { name: "더베이101", lat: 35.156, lng: 129.152, img: "https://images.unsplash.com/photo-1570535914652-3d8429c663a8?w=500&q=80" }
-    ]
+    color: "#fbc2eb"
   },
   "P-Relax-Local": {
     mbti: "자유로운 영혼",
     desc: "바다 냄새 맡으며 소주 한 잔, 이게 낭만이지!",
-    color: "#8fd3f4",
-    course: [
-      { name: "민락수변공원", lat: 35.154, lng: 129.123, img: "https://images.unsplash.com/photo-1602042103525-4c03884e933e?w=500&q=80" },
-      { name: "광안리 회센터", lat: 35.153, lng: 129.119, img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500&q=80" },
-      { name: "수영강 산책로", lat: 35.170, lng: 129.120, img: "https://images.unsplash.com/photo-1635583562699-b1322198083b?w=500&q=80" }
-    ]
+    color: "#8fd3f4"
   },
   "P-Relax-Trendy": {
     mbti: "낭만 방랑자",
     desc: "예쁜 카페에서 하루 종일 있어도 좋아요.",
-    color: "#cfd9df",
-    course: [
-      { name: "전포 카페거리", lat: 35.155, lng: 129.063, img: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&q=80" },
-      { name: "송상현 광장", lat: 35.165, lng: 129.063, img: "https://images.unsplash.com/photo-1590494056259-255d65f57342?w=500&q=80" },
-      { name: "부산시민공원", lat: 35.168, lng: 129.057, img: "https://images.unsplash.com/photo-1582260654030-a29d66050b15?w=500&q=80" }
-    ]
+    color: "#cfd9df"
   },
   "P-Active-Local": {
     mbti: "에너지 부자",
     desc: "시장통에서 이모님이랑 친구 먹는 친화력!",
-    color: "#ff758c",
-    course: [
-      { name: "부평 깡통시장", lat: 35.101, lng: 129.026, img: "https://images.unsplash.com/photo-1583907799516-8df7d9d282cb?w=500&q=80" },
-      { name: "국제시장", lat: 35.100, lng: 129.028, img: "https://images.unsplash.com/photo-1605218427368-35b02661841b?w=500&q=80" },
-      { name: "보수동 책방골목", lat: 35.103, lng: 129.026, img: "https://images.unsplash.com/photo-1588661706828-569d6286df9a?w=500&q=80" }
-    ]
+    color: "#ff758c"
   },
   "P-Active-Trendy": {
     mbti: "힙스터 여행러",
     desc: "지도 없이 걷다가 발견한 힙한 곳을 좋아해요.",
-    color: "#a6c0fe",
-    course: [
-      { name: "송도 해상케이블카", lat: 35.076, lng: 129.017, img: "https://images.unsplash.com/photo-1559461128-4c173c4d7b32?w=500&q=80" },
-      { name: "송도 용궁구름다리", lat: 35.075, lng: 129.015, img: "https://images.unsplash.com/photo-1598583487372-f0491dd55f0b?w=500&q=80" },
-      { name: "영도 포장마차촌", lat: 35.092, lng: 129.035, img: "https://images.unsplash.com/photo-1627885449718-d4239845778a?w=500&q=80" }
-    ]
+    color: "#a6c0fe"
   }
 };
 
@@ -200,6 +206,9 @@ function App() {
   const [userName, setUserName] = useState("");
   const [answers, setAnswers] = useState([]);
   const [loadingPercent, setLoadingPercent] = useState(0);
+  
+  // [NEW] 지도 중심 좌표 상태 (클릭 시 변경)
+  const [mapCenter, setMapCenter] = useState(null);
 
   // [공유 기능] 링크를 통해 들어왔을 때 강제 적용할 결과 Key
   const [directResultKey, setDirectResultKey] = useState(null);
@@ -228,7 +237,9 @@ function App() {
   }, [step]);
 
   // 시작 버튼
-  const handleStart = () => {
+  const handleStart = (e) => {
+    if (e) e.preventDefault(); // 폼 제출 새로고침 방지
+
     if (!userName.trim()) {
       alert("이름을 입력해주세요!");
       return;
@@ -290,11 +301,10 @@ function App() {
 
   // 최종 결과 객체 가져오기
   const getResult = () => {
-    // 1. 링크 공유로 들어온 경우 (directResultKey가 있으면 우선 사용)
+    // 1. 링크 공유로 들어온 경우
     if (directResultKey && results[directResultKey]) {
       return results[directResultKey];
     }
-
     // 2. 퀴즈를 풀어서 들어온 경우
     const key = calculateResultKey();
     return results[key] || results["P-Active-Trendy"];
@@ -305,17 +315,15 @@ function App() {
     setAnswers([]);
     setUserName("");
     setLoadingPercent(0);
-    setDirectResultKey(null); // 공유 상태 초기화
+    setDirectResultKey(null);
+    setMapCenter(null); // 지도 중심도 초기화
 
-    // URL 파라미터 제거 (뒤로가기 방지 및 깔끔한 URL)
+    // URL 파라미터 제거
     window.history.pushState({}, null, window.location.pathname);
   };
 
   const handleShare = () => {
-    // 현재 결과 Key를 계산 (퀴즈 푼 상태라면 계산, 링크라면 저장된 값)
     const currentKey = directResultKey || calculateResultKey();
-
-    // 공유용 URL 생성
     const shareUrl = `${window.location.origin}${window.location.pathname}?result=${currentKey}&name=${userName}`;
 
     navigator.clipboard.writeText(shareUrl);
@@ -393,7 +401,11 @@ function App() {
               <div className="result-screen">
                 {(() => {
                   const result = getResult();
-                  const centerPosition = [result.course[0].lat, result.course[0].lng];
+                  const displayCourse = fixedCourse;
+
+                  // 지도의 초기 중심값 또는 클릭된 위치
+                  // mapCenter가 없으면 코스의 2번째 장소(암남공원)를 기본값으로 사용
+                  const currentCenter = mapCenter || [displayCourse[1].lat, displayCourse[1].lng];
 
                   return (
                     <>
@@ -408,8 +420,8 @@ function App() {
 
                         <div className="map-container-wrapper">
                           <MapContainer
-                            center={centerPosition}
-                            zoom={12}
+                            center={currentCenter}
+                            zoom={13}
                             scrollWheelZoom={false}
                             style={{ height: "100%", width: "100%" }}
                           >
@@ -417,29 +429,47 @@ function App() {
                               attribution='&copy; OpenStreetMap contributors'
                               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
-                            <ChangeView center={centerPosition} />
-                            {result.course.map((spot, idx) => (
+                            {/* 중심좌표 변경 감지 및 이동 */}
+                            <ChangeView center={currentCenter} />
+                            
+                            {displayCourse.map((spot, idx) => (
                               <Marker key={idx} position={[spot.lat, spot.lng]}>
-                                <Popup>{spot.name}</Popup>
+                                <Popup>
+                                  <b>{spot.name}</b><br/>
+                                  ❤️ {spot.likes.toLocaleString()}
+                                </Popup>
                               </Marker>
                             ))}
                           </MapContainer>
                         </div>
 
                         <h3>추천 코스 📍</h3>
+                        <p className="tip-text" style={{ fontSize: '0.85rem', color: '#666', marginBottom: '10px' }}>
+                          * 목록을 클릭하면 지도가 이동해요!
+                        </p>
                         <ul className="course-list-visual">
-                          {result.course.map((spot, idx) => (
-                            <li key={idx} className="course-card">
+                          {displayCourse.map((spot, idx) => (
+                            <li 
+                              key={idx} 
+                              className="course-card" 
+                              // [NEW] 리스트 클릭 시 지도 중심 변경
+                              onClick={() => setMapCenter([spot.lat, spot.lng])}
+                              style={{ cursor: 'pointer' }}
+                            >
                               <div className="card-image" style={{ backgroundImage: `url(${spot.img})` }}>
                                 <span className="card-num">{idx + 1}</span>
                               </div>
                               <div className="card-info">
-                                <h4>{spot.name}</h4>
+                                <div className="card-title-row">
+                                  <h4>{spot.name}</h4>
+                                  <span className="like-badge">❤️ {spot.likes.toLocaleString()}</span>
+                                </div>
                                 <a
                                   href={`https://map.kakao.com/link/search/${spot.name}`}
                                   target="_blank"
                                   rel="noreferrer"
                                   className="btn-map-link"
+                                  onClick={(e) => e.stopPropagation()} // 링크 클릭 시 지도 이동 방지
                                 >
                                   길찾기 🔗
                                 </a>
@@ -449,7 +479,7 @@ function App() {
                         </ul>
 
                         <div className="action-buttons">
-                          <button className="btn-share" onClick={handleShare}>링크 복사 🔗</button>
+                          <button className="btn-share" onClick={handleShare}>공유 하기 🔗</button>
                           <button className="btn-retry" onClick={handleReset}>다시 하기 🔄</button>
                         </div>
                       </div>
@@ -467,5 +497,3 @@ function App() {
 }
 
 export default App;
-
-//test
